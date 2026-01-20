@@ -68,17 +68,6 @@ You can use the following credentials to test the authentication (mapped from Du
 ### ➕ Add Product
 ![Add Product](assets/images/add_product.jpg)
 
-
-## �🖼️ Screenshots
-
-````carousel
-![Login Screen](assets/images/login_dark_mode.jpg)
-<!-- slide -->
-![Dashboard Screen](assets/images/dashboard_dark_mode.jpg)
-<!-- slide -->
-![Add Product](assets/images/add_product.jpg)
-````
-
 ## 🧠 State Management Approach
 
 This project utilizes **Flutter Riverpod** for state management, following the **AsyncNotifier** pattern.
