@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cdlp_app/features/auth/presentation/screens/splash_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'features/auth/presentation/screens/login_screen.dart';
 import 'core/theme/theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   runApp(const ProviderScope(child: MainApp()));
 }
 
@@ -16,11 +18,11 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
-    return  MaterialApp(
+    return MaterialApp(
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeMode,
-      home: const SplashScreen(),
+      home: const LoginScreen(),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

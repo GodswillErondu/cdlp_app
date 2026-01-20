@@ -43,3 +43,12 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment variables
+.env
+
+
+# Analysis results
+analysis_fresh.txt
+analysis_report.txt
+devices.txt

@@ -6,14 +6,17 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_remote_datasource.dart';
+import '../datasources/product_local_datasource.dart';
 import '../models/product_model.dart';
 
 class ProductRepositoryImpl implements ProductRepository {
   final ProductRemoteDataSource remoteDataSource;
+  final ProductLocalDataSource localDataSource;
   final NetworkInfo networkInfo;
 
   ProductRepositoryImpl({
     required this.remoteDataSource,
+    required this.localDataSource,
     required this.networkInfo,
   });
 
@@ -22,19 +25,28 @@ class ProductRepositoryImpl implements ProductRepository {
     if (await networkInfo.isConnected) {
       try {
         final remoteProducts = await remoteDataSource.getProducts();
+        await localDataSource.cacheProducts(remoteProducts);
         return Right(remoteProducts);
-      } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
       } on UnauthorizedException {
         return Left(UnauthorizedFailure());
       } on NotFoundException {
         return Left(NotFoundFailure());
       } on BadRequestException {
         return Left(BadRequestFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
+      } catch (e) {
+        return Left(ServerFailure(message: e.toString()));
       }
     } else {
-      // TODO: Implement local data source for caching
-      return Left(ServerFailure(message: 'No Internet Connection')); // Or a specific OfflineFailure
+      try {
+        final localProducts = await localDataSource.getCachedProducts();
+        return Right(localProducts);
+      } on CacheException {
+        return Left(CacheFailure(message: 'No cached products found'));
+      } catch (e) {
+        return Left(CacheFailure(message: e.toString()));
+      }
     }
   }
 
@@ -49,16 +61,18 @@ class ProductRepositoryImpl implements ProductRepository {
           price: product.price,
           imageUrl: product.imageUrl,
         );
-        final remoteProduct = await remoteDataSource.createProduct(productModel);
+        final remoteProduct = await remoteDataSource.createProduct(
+          productModel,
+        );
         return Right(remoteProduct);
-      } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
       } on UnauthorizedException {
         return Left(UnauthorizedFailure());
       } on NotFoundException {
         return Left(NotFoundFailure());
       } on BadRequestException {
         return Left(BadRequestFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
       }
     } else {
       return Left(ServerFailure(message: 'No Internet Connection'));
@@ -76,16 +90,18 @@ class ProductRepositoryImpl implements ProductRepository {
           price: product.price,
           imageUrl: product.imageUrl,
         );
-        final remoteProduct = await remoteDataSource.updateProduct(productModel);
+        final remoteProduct = await remoteDataSource.updateProduct(
+          productModel,
+        );
         return Right(remoteProduct);
-      } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message));
       } on UnauthorizedException {
         return Left(UnauthorizedFailure());
       } on NotFoundException {
         return Left(NotFoundFailure());
       } on BadRequestException {
         return Left(BadRequestFailure());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message));
       }
     } else {
       return Left(ServerFailure(message: 'No Internet Connection'));

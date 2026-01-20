@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import '../models/product_model.dart';
 import '../../../../core/error/exceptions.dart';
 
+import '../../../../core/constants/api_constants.dart';
+
 abstract class ProductRemoteDataSource {
   Future<List<ProductModel>> getProducts();
   Future<ProductModel> createProduct(ProductModel product);
@@ -13,60 +15,85 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
 
   ProductRemoteDataSourceImpl({required this.dio});
 
-  final List<ProductModel> _products = [
-    const ProductModel(
-      id: '1',
-      name: 'Product 1',
-      description: 'This is a description for product 1.',
-      price: 29.99,
-      imageUrl: 'https://via.placeholder.com/150',
-    ),
-    const ProductModel(
-      id: '2',
-      name: 'Product 2',
-      description: 'This is a description for product 2.',
-      price: 49.99,
-      imageUrl: 'https://via.placeholder.com/150',
-    ),
-    const ProductModel(
-      id: '3',
-      name: 'Product 3',
-      description: 'This is a description for product 3.',
-      price: 19.99,
-      imageUrl: 'https://via.placeholder.com/150',
-    ),
-  ];
-
   @override
   Future<List<ProductModel>> getProducts() async {
-    // TODO: Implement actual API call with Dio
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network delay
-    // Simulate a server error if the list is empty for some reason
-    if (_products.isEmpty) {
-      throw ServerException(message: 'No products found', statusCode: 500);
+    try {
+      final response = await dio.get(
+        ApiConstants.baseUrl + ApiConstants.products,
+      );
+
+      if (response.statusCode == 200) {
+        return (response.data['products'] as List)
+            .map((json) => ProductModel.fromJson(json))
+            .toList();
+      } else {
+        throw ServerException(
+          message: 'Server Error: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Unknown Error',
+        statusCode: e.response?.statusCode,
+      );
     }
-    return _products;
   }
 
   @override
   Future<ProductModel> createProduct(ProductModel product) async {
-    // TODO: Implement actual API call with Dio
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    final newProduct = product.copyWith(id: (_products.length + 1).toString());
-    _products.add(newProduct);
-    return newProduct;
+    try {
+      final response = await dio.post(
+        ApiConstants.baseUrl + ApiConstants.addProduct,
+        data: product.toJson(),
+      );
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return ProductModel.fromJson(response.data);
+      } else {
+        throw ServerException(
+          message: 'Server Error: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Unknown Error',
+        statusCode: e.response?.statusCode,
+      );
+    }
   }
 
   @override
   Future<ProductModel> updateProduct(ProductModel product) async {
-    // TODO: Implement actual API call with Dio
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    final index = _products.indexWhere((p) => p.id == product.id);
-    if (index != -1) {
-      _products[index] = product;
-      return product;
-    } else {
-      throw NotFoundException(message: 'Product with ID ${product.id} not found');
+    try {
+      final response = await dio.put(
+        '${ApiConstants.baseUrl}${ApiConstants.products}/${product.id}',
+        data: product.toJson(),
+      );
+
+      if (response.statusCode == 200) {
+        return ProductModel.fromJson(response.data);
+      } else if (response.statusCode == 404) {
+        throw NotFoundException(
+          message: 'Product with ID ${product.id} not found',
+        );
+      } else {
+        throw ServerException(
+          message: 'Server Error: ${response.statusCode}',
+          statusCode: response.statusCode,
+        );
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        throw NotFoundException(
+          message: 'Product with ID ${product.id} not found',
+        );
+      }
+      throw ServerException(
+        message: e.message ?? 'Unknown Error',
+        statusCode: e.response?.statusCode,
+      );
     }
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/product_remote_datasource.dart';
+import '../../data/datasources/product_local_datasource.dart';
 import '../../data/repositories/product_repository_impl.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/usecases/get_products.dart';
@@ -10,33 +10,44 @@ import '../../domain/usecases/create_product.dart';
 import '../../domain/usecases/update_product.dart';
 import '../../domain/entities/product.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../../../core/error/failures.dart';
 
 // Product specific providers
-final productRemoteDataSourceProvider =
-    Provider<ProductRemoteDataSource>((ref) => ProductRemoteDataSourceImpl(dio: ref.watch(dioProvider)));
+final productRemoteDataSourceProvider = Provider<ProductRemoteDataSource>(
+  (ref) => ProductRemoteDataSourceImpl(dio: ref.watch(dioProvider)),
+);
 
-final productRepositoryProvider = Provider<ProductRepository>((ref) =>
-    ProductRepositoryImpl(
-      remoteDataSource: ref.watch(productRemoteDataSourceProvider),
-      networkInfo: ref.watch(networkInfoProvider),
-    ));
+final productLocalDataSourceProvider = Provider<ProductLocalDataSource>(
+  (ref) => ProductLocalDataSourceImpl(
+    secureStorage: ref.watch(secureStorageProvider),
+  ),
+);
+
+final productRepositoryProvider = Provider<ProductRepository>(
+  (ref) => ProductRepositoryImpl(
+    remoteDataSource: ref.watch(productRemoteDataSourceProvider),
+    localDataSource: ref.watch(productLocalDataSourceProvider),
+    networkInfo: ref.watch(networkInfoProvider),
+  ),
+);
 
 final getProductsProvider = Provider<GetProducts>(
-    (ref) => GetProducts(ref.watch(productRepositoryProvider)));
+  (ref) => GetProducts(ref.watch(productRepositoryProvider)),
+);
 final createProductProvider = Provider<CreateProduct>(
-    (ref) => CreateProduct(ref.watch(productRepositoryProvider)));
+  (ref) => CreateProduct(ref.watch(productRepositoryProvider)),
+);
 final updateProductProvider = Provider<UpdateProduct>(
-    (ref) => UpdateProduct(ref.watch(productRepositoryProvider)));
+  (ref) => UpdateProduct(ref.watch(productRepositoryProvider)),
+);
 
 final productListProvider =
     StateNotifierProvider<ProductListNotifier, ProductListState>((ref) {
-  return ProductListNotifier(
-    ref.watch(getProductsProvider),
-    ref.watch(createProductProvider),
-    ref.watch(updateProductProvider),
-  );
-});
+      return ProductListNotifier(
+        ref.watch(getProductsProvider),
+        ref.watch(createProductProvider),
+        ref.watch(updateProductProvider),
+      );
+    });
 
 class ProductListState {
   final List<Product>? products;
@@ -45,8 +56,11 @@ class ProductListState {
 
   ProductListState({this.products, this.isLoading = false, this.error});
 
-  ProductListState copyWith(
-      {List<Product>? products, bool? isLoading, String? error}) {
+  ProductListState copyWith({
+    List<Product>? products,
+    bool? isLoading,
+    String? error,
+  }) {
     return ProductListState(
       products: products ?? this.products,
       isLoading: isLoading ?? this.isLoading,
@@ -60,8 +74,11 @@ class ProductListNotifier extends StateNotifier<ProductListState> {
   final CreateProduct _createProduct;
   final UpdateProduct _updateProduct;
 
-  ProductListNotifier(this._getProducts, this._createProduct, this._updateProduct)
-      : super(ProductListState()) {
+  ProductListNotifier(
+    this._getProducts,
+    this._createProduct,
+    this._updateProduct,
+  ) : super(ProductListState()) {
     getProducts();
   }
 
@@ -73,7 +90,11 @@ class ProductListNotifier extends StateNotifier<ProductListState> {
         state = state.copyWith(isLoading: false, error: failure.message);
       },
       (products) {
-        state = state.copyWith(isLoading: false, products: products, error: null);
+        state = state.copyWith(
+          isLoading: false,
+          products: products,
+          error: null,
+        );
       },
     );
   }
@@ -88,7 +109,7 @@ class ProductListNotifier extends StateNotifier<ProductListState> {
       (newProduct) {
         state = state.copyWith(
           isLoading: false,
-          products: [...state.products!, newProduct],
+          products: [...(state.products ?? []), newProduct],
           error: null,
         );
       },

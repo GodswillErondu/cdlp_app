@@ -6,8 +6,6 @@ import '../datasources/auth_remote_datasource.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/services/secure_storage_service.dart';
-import '../models/user_model.dart';
-
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -24,8 +22,8 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, User>> login(String email, String password) async {
     if (await networkInfo.isConnected) {
       try {
-        final remoteUser = await remoteDataSource.login(email, password) as UserModel;
-        if(remoteUser.token != null) {
+        final remoteUser = await remoteDataSource.login(email, password);
+        if (remoteUser.token != null) {
           await secureStorageService.saveToken(remoteUser.token!);
         }
         // Here you might want to cache the user locally
@@ -40,7 +38,9 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(ServerFailure(message: e.message));
       }
     } else {
-      return Left(ServerFailure(message: 'No Internet Connection')); // Or a specific OfflineFailure
+      return Left(
+        ServerFailure(message: 'No Internet Connection'),
+      ); // Or a specific OfflineFailure
     }
   }
 }

@@ -12,13 +12,14 @@ class CacheException implements Exception {
 }
 
 class UnauthorizedException extends ServerException {
-  UnauthorizedException({String message = 'Unauthorized'}) : super(message: message, statusCode: 401);
+  UnauthorizedException({super.message = 'Unauthorized'})
+    : super(statusCode: 401);
 }
 
 class NotFoundException extends ServerException {
-  NotFoundException({String message = 'Not Found'}) : super(message: message, statusCode: 404);
+  NotFoundException({super.message = 'Not Found'}) : super(statusCode: 404);
 }
 
 class BadRequestException extends ServerException {
-  BadRequestException({String message = 'Bad Request'}) : super(message: message, statusCode: 400);
+  BadRequestException({super.message = 'Bad Request'}) : super(statusCode: 400);
 }

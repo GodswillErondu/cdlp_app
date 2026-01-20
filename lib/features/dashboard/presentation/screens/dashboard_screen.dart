@@ -1,22 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cdlp_app/core/services/secure_storage_service.dart';
 import 'package:cdlp_app/features/auth/presentation/screens/login_screen.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/product_list_item.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../providers/dashboard_providers.dart';
 import 'product_form_screen.dart';
-import '../../domain/entities/product.dart';
 import '../../../../core/theme/theme_provider.dart';
 import 'package:intl/intl.dart';
-
-
-// This is a placeholder for a more robust provider setup
-final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
-  return SecureStorageService(const FlutterSecureStorage());
-});
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -26,7 +17,6 @@ class DashboardScreen extends ConsumerWidget {
     final User? user = ref.watch(userProvider);
     final ProductListState productListState = ref.watch(productListProvider);
     final String formattedDate = DateFormat.yMMMd().format(DateTime.now());
-
 
     return Scaffold(
       appBar: AppBar(
@@ -43,10 +33,12 @@ class DashboardScreen extends ConsumerWidget {
             onPressed: () async {
               await ref.read(secureStorageServiceProvider).deleteToken();
               ref.read(userProvider.notifier).state = null;
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-                (Route<dynamic> route) => false,
-              );
+              if (context.mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                  (Route<dynamic> route) => false,
+                );
+              }
             },
           ),
         ],
@@ -55,72 +47,122 @@ class DashboardScreen extends ConsumerWidget {
         children: [
           // Profile Summary
           Container(
-            padding: const EdgeInsets.all(16.0),
-            color: Colors.blue.shade100,
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.primary,
+                  Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                ],
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(32),
+                bottomRight: Radius.circular(32),
+              ),
+            ),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: user?.avatarUrl != null
-                      ? NetworkImage(user!.avatarUrl!)
-                      : null,
-                  child: user?.avatarUrl == null
-                      ? const Icon(Icons.person)
-                      : null,
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: CircleAvatar(
+                    radius: 36,
+                    backgroundImage: user?.avatarUrl != null
+                        ? NetworkImage(user!.avatarUrl!)
+                        : null,
+                    child: user?.avatarUrl == null
+                        ? const Icon(Icons.person, size: 36)
+                        : null,
+                  ),
                 ),
-                const SizedBox(width: 16.0),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user?.name ?? 'User Name',
-                      style: Theme.of(context).textTheme.headline6,
-                    ),
-                    Text(user?.email ?? 'user.email@example.com'),
-                    Text(formattedDate),
-                  ],
+                const SizedBox(width: 20.0),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome back,',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        user?.name ?? 'Guest User',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        formattedDate,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 16),
           // Asynchronous List
           Expanded(
             child: productListState.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : productListState.error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(productListState.error!),
-                            ElevatedButton(
-                              onPressed: () {
-                                ref.read(productListProvider.notifier).getProducts();
-                              },
-                              child: const Text('Retry'),
-                            )
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(productListState.error!),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            ref
+                                .read(productListProvider.notifier)
+                                .getProducts();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: const Size(120, 48),
+                          ),
+                          child: const Text('Retry'),
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: productListState.products?.length ?? 0,
-                        itemBuilder: (context, index) {
-                          final product = productListState.products![index];
-                          return ProductListItem(product: product);
-                        },
-                      ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: productListState.products?.length ?? 0,
+                    itemBuilder: (context, index) {
+                      final product = productListState.products![index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: ProductListItem(product: product),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (context) => const ProductFormScreen()),
           );
         },
-        child: const Icon(Icons.add),
+        label: const Text('Add Product'),
+        icon: const Icon(Icons.add),
       ),
     );
   }
 }
-
