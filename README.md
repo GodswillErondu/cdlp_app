@@ -49,6 +49,26 @@ You can use the following credentials to test the authentication (mapped from Du
 
 *Alternatively, use the **Login as Guest** button for quick access.*
 
+## 📱 App Screenshots
+
+### 🔐 Login Screens
+![Login Dark Mode](assets/images/login_dark_mode.jpg)
+![Login Light Mode](assets/images/login_light_mode.jpg)
+![Login With Progress Indicator](assets/images/login_with_progress_indicator.jpg)
+
+---
+
+### 📊 Dashboard
+![Dashboard](assets/images/dashboard.jpg)
+![Dashboard Dark Mode](assets/images/dashboard_dark_mode.jpg)
+![Dashboard After Adding Product](assets/images/dashboard_reflects_added_product.jpg)
+
+---
+
+### ➕ Add Product
+![Add Product](assets/images/add_product.jpg)
+
+
 ## �🖼️ Screenshots
 
 ````carousel
