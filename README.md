@@ -17,7 +17,7 @@ To run this project locally, follow these steps:
 
 1. **Clone the Repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/GodswillErondu/cdlp_app.git
    cd cdlp_app
    ```
 
@@ -52,9 +52,11 @@ You can use the following credentials to test the authentication (mapped from Du
 ## �🖼️ Screenshots
 
 ````carousel
-![Login Screen](artifact://login_screen_mockup.png)
+![Login Screen](assets/images/login_dark_mode.jpg)
 <!-- slide -->
-![Dashboard Screen](artifact://dashboard_screen_mockup.png)
+![Dashboard Screen](assets/images/dashboard_dark_mode.jpg)
+<!-- slide -->
+![Add Product](assets/images/add_product.jpg)
 ````
 
 ## 🧠 State Management Approach
