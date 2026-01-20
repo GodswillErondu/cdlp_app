@@ -97,7 +97,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void loginAsGuest() {
     state = state.copyWith(isLoading: true);
-    // Simulate a short delay for a better UI feel
     Future.delayed(const Duration(milliseconds: 500), () {
       const guestUser = User(
         id: 'guest',

@@ -26,7 +26,6 @@ class AuthRepositoryImpl implements AuthRepository {
         if (remoteUser.token != null) {
           await secureStorageService.saveToken(remoteUser.token!);
         }
-        // Here you might want to cache the user locally
         return Right(remoteUser);
       } on UnauthorizedException {
         return Left(UnauthorizedFailure());
@@ -38,9 +37,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(ServerFailure(message: e.message));
       }
     } else {
-      return Left(
-        ServerFailure(message: 'No Internet Connection'),
-      ); // Or a specific OfflineFailure
+      return Left(ServerFailure(message: 'No Internet Connection'));
     }
   }
 }

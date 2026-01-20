@@ -43,7 +43,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   void _saveProduct() {
     if (_formKey.currentState!.validate()) {
       final product = Product(
-        id: widget.product?.id, // Use existing ID if in edit mode, otherwise null
+        id: widget.product?.id,
         name: _nameController.text,
         description: _descriptionController.text,
         price: double.parse(_priceController.text),

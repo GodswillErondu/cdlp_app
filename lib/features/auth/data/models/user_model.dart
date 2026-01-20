@@ -31,7 +31,6 @@ class UserModel extends User {
     };
   }
 
-  // Optionally, for convenience, you can add a copyWith method
   UserModel copyWith({
     String? id,
     String? email,

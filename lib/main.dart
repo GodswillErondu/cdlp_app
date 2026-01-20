@@ -31,7 +31,6 @@ class MainApp extends ConsumerWidget {
       supportedLocales: const [
         Locale('en', ''), // English
         Locale('es', ''), // Spanish
-        // Add more locales as needed
       ],
     );
   }

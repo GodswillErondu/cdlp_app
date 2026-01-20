@@ -18,7 +18,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       String username = email;
 
-      // If input looks like an email, try to resolve it to a username
       if (email.contains('@')) {
         try {
           final searchResponse = await dio.get(
@@ -29,7 +28,6 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           if (searchResponse.statusCode == 200) {
             final List users = searchResponse.data['users'] ?? [];
             if (users.isNotEmpty) {
-              // Try to find an exact match for the email
               final exactMatch = users.firstWhere(
                 (u) =>
                     u['email'].toString().toLowerCase() == email.toLowerCase(),
@@ -38,10 +36,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
               username = exactMatch['username'];
             }
           }
-        } catch (e) {
-          // If search fails, we'll just fall back to using the original input
-          // This is a safety measure to not block login if search is flaky
-        }
+        } catch (e) {}
       }
 
       final response = await dio.post(

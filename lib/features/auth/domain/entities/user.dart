@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 class User extends Equatable {
   final String id;
   final String email;
-  final String? name; // Optional, as per PRD "Profile Summary: Display user data (name, email, avatar)"
-  final String? avatarUrl; // Optional
+  final String? name;
+  final String? avatarUrl;
 
   const User({
     required this.id,
